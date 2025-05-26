@@ -1,0 +1,30 @@
+name: Build and Publish to NuGet
+
+on:
+  workflow_dispatch:
+
+env:
+  TYPES_PROJECT_NAME: RyoTune.Persona3Reload.Types
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: "true"
+
+      - name: Setup .NET Core SDK (8.0)
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        run: dotnet pack ${{ env.TYPES_PROJECT_NAME }} -c Release --output .
+
+      - name: Push to NuGet
+        run: dotnet nuget push "*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
